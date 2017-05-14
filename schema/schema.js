@@ -16,8 +16,8 @@ const UserType = new GraphQLObjectType({
     age: { type: GraphQLInt },
     company: {
       type: CompanyType,
-      resolve: (pV, args) => {
-        return axios.get(`http://localhost:3000/companies/${pV.companyId}`)
+      resolve: ({ companyId }, args) => {
+        return axios.get(`http://localhost:3000/companies/${companyId}`)
           .then(response => response.data);
       }
     }
@@ -32,8 +32,8 @@ const CompanyType = new GraphQLObjectType({
     description: { type: GraphQLString },
     users: {
       type: new GraphQLList(UserType),
-      resolve(pV, args) {
-        return axios.get(`http://localhost:3000/companies/${pV.id}/users`)
+      resolve({ id }, args) {
+        return axios.get(`http://localhost:3000/companies/${id}/users`)
           .then(response => response.data);
       }
     }
@@ -46,16 +46,16 @@ const RootQuery = new GraphQLObjectType({
     user: {
       type: UserType,
       args: { id: { type: GraphQLString } },
-      resolve(pV, args) {
-        return axios.get(`http://localhost:3000/users/${args.id}`)
+      resolve(pV, { id }) {
+        return axios.get(`http://localhost:3000/users/${id}`)
           .then(response => response.data);
       }
     },
     company: {
       type: CompanyType,
       args: { id: { type: GraphQLString} },
-      resolve(pV, args) {
-        return axios.get(`http://localhost:3000/companies/${args.id}`)
+      resolve(pV, { id }) {
+        return axios.get(`http://localhost:3000/companies/${id}`)
           .then(response => response.data);
       }
     }
@@ -74,6 +74,16 @@ const mutation = new GraphQLObjectType({
       },
       resolve(pV, { firstName, age }) {
         return axios.post('http://localhost:3000/users', { firstName, age })
+          .then(response => response.data);
+      }
+    },
+    deleteUser: {
+      type: UserType,
+      args: {
+        id: { type: new GraphQLNonNull(GraphQLString) }
+      },
+      resolve(pV, { id }) {
+        return axios.delete(`http://localhost:3000/users/${id}`)
           .then(response => response.data);
       }
     }
